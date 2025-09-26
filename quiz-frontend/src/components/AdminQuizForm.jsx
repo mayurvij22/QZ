@@ -1,4 +1,3 @@
-// src/components/AdminQuizForm.jsx
 import { useState, useEffect } from "react";
 import api from "../utils/api";
 
@@ -25,7 +24,7 @@ export default function AdminQuizForm({ quiz, onClose, onSuccess }) {
 
   const submit = async (e) => {
     e.preventDefault();
-    if (options.length < 2) return setError("At least 2 options required");
+    if (options.length < 2) return setError("At least 2 options are required");
     setError("");
     setSaving(true);
     try {

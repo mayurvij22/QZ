@@ -1,87 +1,77 @@
-// src/components/QuizCard.jsx
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function QuizCard({ quiz, isAdmin, userVote, onVote, onEdit, onDelete }) {
-  const [showVoters, setShowVoters] = useState(null);
+  const navigate = useNavigate();
+
+  if (!quiz || !quiz.options || quiz.options.length === 0) {
+    return (
+      <div className="bg-white p-5 rounded-2xl shadow-md w-full mx-auto my-3 text-red-500 font-semibold">
+        Invalid quiz data
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl transition duration-300 w-full max-w-xl mx-auto my-3">
-      <h2 className="font-bold text-lg mb-4 text-gray-800">{quiz.question}</h2>
+    <div className="bg-white p-5 sm:p-6 rounded-3xl shadow-md hover:shadow-xl transition-all duration-300 w-full max-w-xl mx-auto my-4 border border-gray-200">
+      <h2 className="font-bold text-lg sm:text-xl md:text-2xl mb-4 text-gray-800 break-words">
+        {quiz.question}
+      </h2>
 
-      <ul className="space-y-2">
+      <ul className="space-y-3">
         {quiz.options.map((opt, i) => {
-          const voted = userVote?.chosenOption === i;
-          const correct = userVote?.isCorrect && voted;
-          const wrong = userVote && !userVote.isCorrect && voted;
+          const isCorrectAnswer = i === quiz.correctAnswer;
+          const userChoseThis = userVote?.chosenOption === i;
 
-          const voteCount = quiz.optionCounts?.[i]?.count || 0;
-          const voters = quiz.optionCounts?.[i]?.voters || [];
+          let optionClasses =
+            "p-3 sm:p-4 rounded-xl border flex flex-col cursor-pointer transition-all";
 
-          const highlightCorrect = userVote && i === quiz.correctAnswer ? "bg-green-100 font-semibold" : "";
+          if (userVote) {
+            if (userChoseThis && userVote.isCorrect) {
+              optionClasses += " bg-green-200 border-green-400";
+            } else if (userChoseThis && !userVote.isCorrect) {
+              optionClasses += " bg-red-200 border-red-400";
+            } else {
+              optionClasses += " bg-gray-50 border-gray-200";
+            }
+          } else {
+            optionClasses += " hover:scale-[1.02] hover:shadow-lg";
+          }
 
-          const optionClasses = `
-            p-3 rounded-lg flex justify-between items-center border cursor-pointer transition
-            ${correct ? "bg-green-200 border-green-400" : ""}
-            ${wrong ? "bg-red-200 border-red-400" : ""}
-            ${highlightCorrect}
-            hover:shadow-md
-          `;
+          if (isAdmin && isCorrectAnswer) {
+            optionClasses += " bg-green-100 border-green-400 font-semibold";
+          }
 
           const handleOptionClick = () => {
-            if (!isAdmin && !userVote) onVote(i);
-            if (isAdmin) setShowVoters(showVoters === i ? null : i);
+            if (isAdmin) {
+              navigate(`/admin/quiz/${quiz._id}/option/${i}`);
+            } else if (!userVote && onVote) {
+              onVote(i);
+            }
           };
 
           return (
-            <li key={i} className="relative">
+            <li key={i}>
               <div className={optionClasses} onClick={handleOptionClick}>
-                <span>{opt}</span>
-
-                <div className="flex items-center gap-2">
-                  {isAdmin && (
-                    <span className="text-blue-500 text-sm">
-                      Votes: {voteCount}
-                    </span>
-                  )}
-
-                  {!isAdmin && userVote && i === quiz.correctAnswer && (
-                    <span className="ml-2 text-green-600 font-semibold text-sm">
-                      (Correct Answer)
-                    </span>
-                  )}
-                </div>
+                <span className="text-gray-800 font-medium">{opt}</span>
+                {!isAdmin && userVote && isCorrectAnswer && (
+                  <span className="ml-2 text-green-600 font-semibold text-sm">(Correct Answer)</span>
+                )}
               </div>
-
-              {/* Show voter names for admin */}
-              {isAdmin && showVoters === i && (
-                <ul className="absolute left-0 top-full bg-white shadow-lg rounded p-2 mt-1 text-sm text-gray-700 z-10 w-full">
-                  {voters.length > 0 ? (
-                    voters.map((name, idx) => <li key={idx}>{name}</li>)
-                  ) : (
-                    <li>No votes yet</li>
-                  )}
-                </ul>
-              )}
             </li>
           );
         })}
       </ul>
 
-      {/* Admin controls */}
+      {!isAdmin && userVote && (
+        <p className={`mt-4 font-semibold text-center ${userVote.isCorrect ? "text-green-600" : "text-red-600"}`}>
+          {userVote.isCorrect ? "✅ Correct!" : "❌ Wrong Answer"}
+        </p>
+      )}
+
       {isAdmin && (
-        <div className="flex flex-wrap gap-3 mt-4">
-          <button
-            onClick={onEdit}
-            className="bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600 transition w-full sm:w-auto"
-          >
-            Edit
-          </button>
-          <button
-            onClick={onDelete}
-            className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition w-full sm:w-auto"
-          >
-            Delete
-          </button>
+        <div className="flex flex-wrap gap-3 mt-4 sm:mt-5">
+          {onEdit && <button onClick={onEdit} className="bg-yellow-500 text-white px-4 py-2 rounded-xl hover:bg-yellow-600 w-full sm:w-auto">Edit</button>}
+          {onDelete && <button onClick={onDelete} className="bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600 w-full sm:w-auto">Delete</button>}
         </div>
       )}
     </div>

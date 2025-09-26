@@ -4,10 +4,16 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
 
-// Optionally: fallback UI for lazy-loaded routes/pages
+// Root component with fallback UI
 const Root = () => (
   <StrictMode>
-    <Suspense fallback={<div className="text-center mt-20">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen text-gray-600 text-base sm:text-lg md:text-xl">
+          Loading application...
+        </div>
+      }
+    >
       <App />
     </Suspense>
   </StrictMode>

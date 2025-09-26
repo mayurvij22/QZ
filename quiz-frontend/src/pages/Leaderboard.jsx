@@ -22,38 +22,54 @@ export default function Leaderboard() {
   }, []);
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-6 text-center">Leaderboard</h1>
+    <div className="p-4 sm:p-8">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-gray-800">
+        Leaderboard
+      </h1>
 
       {loading ? (
-        <div className="text-center py-8">Loading leaderboard...</div>
+        <div className="text-center py-8 text-gray-500">Loading leaderboard...</div>
       ) : stats.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">No votes yet.</div>
+        <div className="text-center py-8 text-gray-400">No votes yet.</div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full border border-gray-300 rounded-lg overflow-hidden">
+        <div className="overflow-x-auto rounded-lg shadow-lg border border-gray-200">
+          <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-blue-100">
               <tr>
-                <th className="border px-4 py-2 text-left">Rank</th>
-                <th className="border px-4 py-2 text-left">Name</th>
-                <th className="border px-4 py-2 text-left">Email</th>
-                <th className="border px-4 py-2 text-left">Total Quizzes</th>
-                <th className="border px-4 py-2 text-left">Correct Answers</th>
-                <th className="border px-4 py-2 text-left">Accuracy (%)</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                  Rank
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                  Name
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                  Email
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                  Total Quizzes
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                  Correct Answers
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                  Accuracy (%)
+                </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100">
               {stats.map((user, index) => (
                 <tr
                   key={user.email}
-                  className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                  className="hover:bg-gray-50 transition-colors duration-200"
                 >
-                  <td className="border px-4 py-2">{index + 1}</td>
-                  <td className="border px-4 py-2 font-medium">{user.name}</td>
-                  <td className="border px-4 py-2 text-sm text-gray-600">{user.email}</td>
-                  <td className="border px-4 py-2">{user.total}</td>
-                  <td className="border px-4 py-2">{user.correct}</td>
-                  <td className="border px-4 py-2">{(user.accuracy || 0).toFixed(2)}</td>
+                  <td className="px-4 py-3 text-sm">{index + 1}</td>
+                  <td className="px-4 py-3 font-medium text-gray-800">{user.name}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600">{user.email}</td>
+                  <td className="px-4 py-3 text-sm">{user.total}</td>
+                  <td className="px-4 py-3 text-sm">{user.correct}</td>
+                  <td className="px-4 py-3 text-sm">
+                    {(user.accuracy || 0).toFixed(2)}
+                  </td>
                 </tr>
               ))}
             </tbody>

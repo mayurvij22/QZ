@@ -4,11 +4,20 @@ const Quiz = require('../models/Quiz');
 const voteQuiz = async (req, res, next) => {
   try {
     const { quizId, chosenOption } = req.body;
+
+    // Check if quiz exists
     const quiz = await Quiz.findById(quizId);
     if (!quiz) return res.status(404).json({ message: 'Quiz not found' });
 
+    // Check if user already voted
+    const existingVote = await Vote.findOne({ quiz: quizId, user: req.user._id });
+    if (existingVote) {
+      return res.status(400).json({ message: 'Already voted', vote: existingVote });
+    }
+
     const isCorrect = quiz.correctAnswer === chosenOption;
 
+    // Create vote
     const vote = await Vote.create({
       quiz: quiz._id,
       user: req.user._id,
@@ -16,22 +25,29 @@ const voteQuiz = async (req, res, next) => {
       isCorrect
     });
 
-    // ✅ Return vote result AND correct answer immediately
+    // Update quiz option counts and voters
+    if (!quiz.optionCounts) {
+      quiz.optionCounts = quiz.options.map(() => ({ count: 0, voters: [] }));
+    }
+    quiz.optionCounts[chosenOption].count += 1;
+    quiz.optionCounts[chosenOption].voters.push(req.user._id);
+    await quiz.save();
+
     res.status(201).json({
       message: 'Vote recorded',
-      isCorrect, 
-      chosenOption,
-      correctAnswer: quiz.correctAnswer,
+      vote: {
+        quizId: quiz._id,
+        chosenOption,
+        isCorrect,
+        correctAnswer: quiz.correctAnswer
+      }
     });
 
   } catch (err) {
-    // handle duplicate vote error
-    if (err.code === 11000) {
-      return res.status(400).json({ message: 'Already voted for this quiz' });
-    }
     next(err);
   }
 };
+
 
 
 // Results after 24h
@@ -153,7 +169,29 @@ const getQuizVotes = async (req, res, next) => {
   }
 };
 
+// GET /api/votes/me
+const getUserVotes = async (req, res, next) => {
+  try {
+    const votes = await Vote.find({ user: req.user._id }).populate("quiz");
+    // Send votes as { quizId: { chosenOption, isCorrect, question, options, correctAnswer } }
+    const voteMap = votes.reduce((acc, v) => {
+      if (!v.quiz) return acc; // in case quiz was deleted
+      acc[v.quiz._id] = {
+        chosenOption: v.chosenOption,
+        isCorrect: v.isCorrect,
+        question: v.quiz.question,
+        options: v.quiz.options,
+        correctAnswer: v.quiz.correctAnswer
+      };
+      return acc;
+    }, {});
+    res.json(voteMap);
+  } catch (err) {
+    next(err);
+  }
+};
 
 
 
-module.exports = { voteQuiz, getResults,getUserStats,leaderboard,getQuizVotes };
+
+module.exports = { voteQuiz, getResults,getUserStats,leaderboard,getQuizVotes, getUserVotes };

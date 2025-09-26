@@ -1,7 +1,7 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "../context/ToastContext"; // Toast notifications
+import { useToast } from "../context/ToastContext"; 
 import { FiEye, FiEyeOff } from "react-icons/fi";
 
 export default function Login() {
@@ -9,10 +9,10 @@ export default function Login() {
   const { addToast } = useToast();
   const nav = useNavigate();
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(localStorage.getItem("rememberEmail") || "");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(false);
+  const [remember, setRemember] = useState(!!localStorage.getItem("rememberEmail"));
   const [loading, setLoading] = useState(false);
 
   const submit = async (e) => {
@@ -20,7 +20,7 @@ export default function Login() {
     setLoading(true);
     try {
       const user = await loginUser({ email, password });
-      if (remember) localStorage.setItem("rememberEmail", email); // optional
+      if (remember) localStorage.setItem("rememberEmail", email);
       else localStorage.removeItem("rememberEmail");
 
       addToast("Login successful!", "success");
@@ -34,37 +34,44 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 px-4">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 px-4 sm:px-6 md:px-8">
       <form
         onSubmit={submit}
-        className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm md:max-w-md lg:max-w-lg transition-all"
+        className="bg-white p-6 sm:p-8 md:p-10 rounded-xl shadow-lg w-full max-w-sm sm:max-w-md md:max-w-lg transition-all space-y-4"
       >
         <h2 className="text-2xl font-bold mb-6 text-center text-gray-700">
           Login
         </h2>
 
         {/* Email */}
-        <input
-          required
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
-          className="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-        />
-
-        {/* Password with show/hide */}
-        <div className="relative mb-4">
+        <div>
+          <label htmlFor="email" className="sr-only">Email</label>
           <input
+            id="email"
+            type="email"
             required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 hover:shadow-sm transition"
+          />
+        </div>
+
+        {/* Password */}
+        <div className="relative">
+          <label htmlFor="password" className="sr-only">Password</label>
+          <input
+            id="password"
             type={showPassword ? "text" : "password"}
+            required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 pr-10"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 pr-10 hover:shadow-sm transition"
           />
           <button
             type="button"
+            aria-label={showPassword ? "Hide password" : "Show password"}
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-3 text-gray-500 hover:text-gray-700 transition"
           >
@@ -72,8 +79,8 @@ export default function Login() {
           </button>
         </div>
 
-        {/* Remember me and Forgot password */}
-        <div className="flex justify-between items-center mb-6 text-sm">
+        {/* Remember & Forgot */}
+        <div className="flex justify-between items-center text-sm">
           <label className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -88,7 +95,7 @@ export default function Login() {
           </a>
         </div>
 
-        {/* Submit button */}
+        {/* Submit */}
         <button
           type="submit"
           disabled={loading}

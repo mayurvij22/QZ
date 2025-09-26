@@ -1,4 +1,3 @@
-// src/pages/UserDashboard.jsx
 import { useState, useEffect, useContext } from "react";
 import api from "../utils/api";
 import QuizCard from "../components/QuizCard";
@@ -10,22 +9,16 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const { user } = useContext(AuthContext);
 
-  const fetchQuizzes = async () => {
+  // Fetch all quizzes + user votes
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/api/quizzes");
-      const data = Array.isArray(res.data) ? res.data : res.data.quizzes || [];
+      const resQuizzes = await api.get("/api/quizzes");
+      const data = Array.isArray(resQuizzes.data) ? resQuizzes.data : resQuizzes.data.quizzes || [];
       setQuizzes(data);
 
-      // Fetch user votes
-      const voteRes = await api.get("/api/votes/me/stats");
-      const votes = {};
-      data.forEach(q => {
-        const userVote = voteRes.data?.votes?.find(v => v.quiz === q._id);
-        if (userVote) votes[q._id] = userVote;
-      });
-      setUserVotes(votes);
-
+      const resVotes = await api.get("/api/votes/me/votes");
+      setUserVotes(resVotes.data || {});
     } catch (err) {
       console.error(err);
     } finally {
@@ -34,17 +27,23 @@ export default function UserDashboard() {
   };
 
   useEffect(() => {
-    fetchQuizzes();
+    fetchData();
   }, []);
 
   const handleVote = async (quizId, chosenOption) => {
     try {
       const res = await api.post("/api/votes", { quizId, chosenOption });
-      alert(res.data.message);
 
-      setUserVotes(prev => ({
+      // Save vote in state
+      setUserVotes((prev) => ({
         ...prev,
-        [quizId]: { chosenOption, isCorrect: res.data.isCorrect }
+        [quizId]: {
+          chosenOption,
+          isCorrect: res.data.vote.isCorrect,
+          question: res.data.vote.question,
+          options: res.data.vote.options,
+          correctAnswer: res.data.vote.correctAnswer
+        }
       }));
     } catch (err) {
       console.error(err);
@@ -52,21 +51,31 @@ export default function UserDashboard() {
     }
   };
 
+  // Only show quizzes not voted yet
+  const availableQuizzes = quizzes.filter((q) => !userVotes[q._id]);
+
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gray-50">
-      <h1 className="text-3xl font-bold mb-6 text-gray-700">Welcome, {user?.name}</h1>
+    <div className="p-4 sm:p-8 min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
+      <h1 className="text-3xl sm:text-4xl font-bold mb-6 text-gray-700">
+        Welcome, {user?.name}
+      </h1>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="animate-pulse bg-white rounded-xl shadow p-4 h-48" />
+            <div
+              key={i}
+              className="animate-pulse bg-white rounded-xl shadow p-4 h-48 sm:h-56"
+            />
           ))}
         </div>
-      ) : quizzes.length === 0 ? (
-        <div className="text-gray-500 text-lg">No quizzes available.</div>
+      ) : availableQuizzes.length === 0 ? (
+        <div className="text-gray-500 text-lg text-center mt-12">
+          No quizzes available.
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {quizzes.map(q => (
+          {availableQuizzes.map((q) => (
             <QuizCard
               key={q._id}
               quiz={q}
