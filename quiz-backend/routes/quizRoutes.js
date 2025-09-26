@@ -6,6 +6,7 @@ const {
   getQuiz, 
   deleteQuiz, 
   updateQuiz, 
+   getQuizById, // <-- new controller
   getQuizzesWithVotes 
 } = require('../controllers/quizController');
 const { requireAuth, requireAdmin } = require('../middleware/authMiddleware');
@@ -15,6 +16,7 @@ router.get('/', requireAuth, getQuizzes);
 
 // ⚡ Place /admin BEFORE /:id to avoid conflict
 router.get('/admin', requireAuth, requireAdmin, getQuizzesWithVotes);
+router.get("/admin/quizzes/:id", requireAuth, requireAdmin, getQuizById); // <-- new endpoint
 
 // Single quiz by ID
 router.get('/:id', requireAuth, getQuiz);

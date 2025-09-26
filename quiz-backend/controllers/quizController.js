@@ -105,6 +105,50 @@ const updateQuiz = async (req, res, next) => {
 };
 
 
+// const getQuizById = async (req, res) => {
+//   try {
+//     const quiz = await Quiz.findById(req.params.id);
+//     if (!quiz) return res.status(404).json({ message: 'Quiz not found' });
+
+//     // Aggregate votes for each option
+//     const votes = await Vote.find({ quiz: quiz._id }).populate('user', 'name');
+
+//     const optionCounts = quiz.options.map((_, i) => {
+//       const voters = votes
+//         .filter(v => v.chosenOption === i)
+//         .map(v => ({ name: v.user.name, isCorrect: v.isCorrect }));
+//       return { count: voters.length, voters };
+//     });
+
+//     res.json({ ...quiz.toObject(), optionCounts });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: 'Server error' });
+//   }
+// };
+
+const getQuizById = async (req, res) => {
+  try {
+    const quiz = await Quiz.findById(req.params.id);
+    if (!quiz) return res.status(404).json({ message: 'Quiz not found' });
+
+    // Fetch votes for this quiz
+    const votes = await Vote.find({ quiz: quiz._id }).populate('user', 'name');
+
+    // Build optionCounts with voter names and isCorrect
+    const optionCounts = quiz.options.map((_, i) => {
+      const voters = votes
+        .filter(v => v.chosenOption === i)
+        .map(v => ({ name: v.user.name, isCorrect: v.isCorrect }));
+      return { count: voters.length, voters };
+    });
+
+    res.json({ ...quiz.toObject(), optionCounts });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
 // const getUserQuizzes = async (req, res, next) => {
 //   try {
@@ -156,4 +200,4 @@ const updateQuiz = async (req, res, next) => {
 };
 
 
-module.exports = { createQuiz,getQuizzesWithVotes, getQuizzes, getQuiz, deleteQuiz,updateQuiz };
+module.exports = { createQuiz,getQuizzesWithVotes, getQuizzes, getQuiz, deleteQuiz,updateQuiz,getQuizById };

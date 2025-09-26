@@ -123,19 +123,22 @@ const leaderboard = async (req, res, next) => {
     next(err);
   }
 };
-
-// Get vote stats for a specific quiz (Admin)
 const getQuizVotes = async (req, res, next) => {
   try {
     const quiz = await Quiz.findById(req.params.quizId);
-    if (!quiz) return res.status(404).json({ message: 'Quiz not found' });
+    if (!quiz) return res.status(404).json({ message: "Quiz not found" });
 
-    const votes = await Vote.find({ quiz: quiz._id });
+    // populate user names
+    const votes = await Vote.find({ quiz: quiz._id }).populate("user", "name");
 
     const totalVotes = votes.length;
     const optionCounts = quiz.options.map((opt, i) => {
-      const count = votes.filter(v => v.chosenOption === i).length;
-      return { option: opt, count };
+      const optionVotes = votes.filter(v => v.chosenOption === i);
+      return {
+        option: opt,
+        count: optionVotes.length,
+        voters: optionVotes.map(v => v.user.name) // send names to frontend
+      };
     });
 
     res.json({
@@ -149,6 +152,7 @@ const getQuizVotes = async (req, res, next) => {
     next(err);
   }
 };
+
 
 
 
