@@ -6,14 +6,14 @@ const User = require('../models/User');
 
 const run = async () => {
   await connectDB();
-  const email = process.env.SEED_ADMIN_EMAIL || 'admin@example.com';
-  const pass = process.env.SEED_ADMIN_PASS || 'Admin@123';
+  const email = process.env.SEED_ADMIN_EMAIL || 'mayurvij22@gmail.com';
+  const pass = process.env.SEED_ADMIN_PASS || '123456';
   let admin = await User.findOne({ email });
   if (admin) {
     console.log('Admin exists:', email);
     process.exit(0);
   }
-  admin = new User({ name: 'Admin', email, role: 'admin' });
+  admin = new User({ name: 'Mayur Patil', email, role: 'admin' });
   await admin.setPassword(pass);
   await admin.save();
   console.log('Admin created:', email);

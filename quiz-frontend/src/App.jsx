@@ -8,6 +8,7 @@ import { useContext, lazy, Suspense } from "react";
 import { AuthProvider, AuthContext } from "./context/AuthContext.jsx";
 import { ToastProvider } from "./context/ToastContext.jsx";
 import Navbar from "./components/Navbar.jsx";
+import Footer from "./components/Footer.jsx"; // <-- Footer
 
 // Lazy-loaded pages
 const Login = lazy(() => import("./pages/Login"));
@@ -24,7 +25,7 @@ function PrivateRoute({ children, role }) {
 
   if (loading)
     return (
-      <div className="p-8 text-center text-gray-600 text-base sm:text-lg md:text-xl">
+      <div className="flex items-center justify-center min-h-[60vh] text-gray-600 text-base sm:text-lg md:text-xl">
         Checking authentication...
       </div>
     );
@@ -38,21 +39,22 @@ export default function App() {
   return (
     <AuthProvider>
       <ToastProvider>
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
+        <div className="flex flex-col min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
           <Router>
+            {/* Navbar */}
             <Navbar />
-            <main className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-6">
+
+            {/* Main content */}
+            <main className="flex-1 w-full container mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-6">
               <Routes>
-                <Route
-                  path="/"
-                  element={<Navigate to="/dashboard" replace />}
-                />
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
                 <Route
                   path="/login"
                   element={
                     <Suspense
                       fallback={
-                        <div className="p-8 text-center text-gray-600 text-base sm:text-lg">
+                        <div className="flex items-center justify-center min-h-[60vh] text-gray-600 text-base sm:text-lg">
                           Loading page...
                         </div>
                       }
@@ -67,7 +69,7 @@ export default function App() {
                   element={
                     <Suspense
                       fallback={
-                        <div className="p-8 text-center text-gray-600 text-base sm:text-lg">
+                        <div className="flex items-center justify-center min-h-[60vh] text-gray-600 text-base sm:text-lg">
                           Loading page...
                         </div>
                       }
@@ -76,13 +78,14 @@ export default function App() {
                     </Suspense>
                   }
                 />
+
                 <Route
                   path="/admin"
                   element={
                     <PrivateRoute role="admin">
                       <Suspense
                         fallback={
-                          <div className="p-8 text-center text-gray-600 text-base sm:text-lg">
+                          <div className="flex items-center justify-center min-h-[60vh] text-gray-600 text-base sm:text-lg">
                             Loading page...
                           </div>
                         }
@@ -92,13 +95,14 @@ export default function App() {
                     </PrivateRoute>
                   }
                 />
+
                 <Route
                   path="/admin/quiz/:quizId/option/:optionIndex"
                   element={
                     <PrivateRoute role="admin">
                       <Suspense
                         fallback={
-                          <div className="p-8 text-center text-gray-600 text-base sm:text-lg">
+                          <div className="flex items-center justify-center min-h-[60vh] text-gray-600 text-base sm:text-lg">
                             Loading page...
                           </div>
                         }
@@ -108,13 +112,14 @@ export default function App() {
                     </PrivateRoute>
                   }
                 />
+
                 <Route
                   path="/dashboard"
                   element={
                     <PrivateRoute role="user">
                       <Suspense
                         fallback={
-                          <div className="p-8 text-center text-gray-600 text-base sm:text-lg">
+                          <div className="flex items-center justify-center min-h-[60vh] text-gray-600 text-base sm:text-lg">
                             Loading page...
                           </div>
                         }
@@ -131,7 +136,7 @@ export default function App() {
                     <PrivateRoute role="user">
                       <Suspense
                         fallback={
-                          <div className="p-8 text-center text-gray-600 text-base sm:text-lg">
+                          <div className="flex items-center justify-center min-h-[60vh] text-gray-600 text-base sm:text-lg">
                             Loading page...
                           </div>
                         }
@@ -148,7 +153,7 @@ export default function App() {
                     <PrivateRoute>
                       <Suspense
                         fallback={
-                          <div className="p-8 text-center text-gray-600 text-base sm:text-lg">
+                          <div className="flex items-center justify-center min-h-[60vh] text-gray-600 text-base sm:text-lg">
                             Loading page...
                           </div>
                         }
@@ -158,9 +163,13 @@ export default function App() {
                     </PrivateRoute>
                   }
                 />
+
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </main>
+
+            {/* Footer always at bottom */}
+            <Footer />
           </Router>
         </div>
       </ToastProvider>

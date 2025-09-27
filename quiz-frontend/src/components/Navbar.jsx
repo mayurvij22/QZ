@@ -40,7 +40,7 @@ export default function Navbar() {
                   d="M9 12h6m-3-3v6m8 2a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3 2-3h5a2 2 0 012 2v11z"
                 />
               </svg>
-              BHN Quizzy
+              MHN Quizzy
             </Link>
           </div>
 

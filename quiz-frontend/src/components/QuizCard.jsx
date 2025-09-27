@@ -5,14 +5,14 @@ export default function QuizCard({ quiz, isAdmin, userVote, onVote, onEdit, onDe
 
   if (!quiz || !quiz.options || quiz.options.length === 0) {
     return (
-      <div className="bg-white p-5 rounded-2xl shadow-md w-full mx-auto my-3 text-red-500 font-semibold">
+      <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-md w-full mx-auto my-3 text-red-500 font-semibold text-center">
         Invalid quiz data
       </div>
     );
   }
 
   return (
-    <div className="bg-white p-5 sm:p-6 rounded-3xl shadow-md hover:shadow-xl transition-all duration-300 w-full max-w-xl mx-auto my-4 border border-gray-200">
+    <div className="bg-white p-4 sm:p-6 rounded-3xl shadow-md hover:shadow-xl transition-all duration-300 w-full max-w-xl mx-auto my-4 border border-gray-200">
       <h2 className="font-bold text-lg sm:text-xl md:text-2xl mb-4 text-gray-800 break-words">
         {quiz.question}
       </h2>
@@ -54,7 +54,9 @@ export default function QuizCard({ quiz, isAdmin, userVote, onVote, onEdit, onDe
               <div className={optionClasses} onClick={handleOptionClick}>
                 <span className="text-gray-800 font-medium">{opt}</span>
                 {!isAdmin && userVote && isCorrectAnswer && (
-                  <span className="ml-2 text-green-600 font-semibold text-sm">(Correct Answer)</span>
+                  <span className="mt-1 text-green-600 font-semibold text-sm">
+                    (Correct Answer)
+                  </span>
                 )}
               </div>
             </li>
@@ -62,16 +64,36 @@ export default function QuizCard({ quiz, isAdmin, userVote, onVote, onEdit, onDe
         })}
       </ul>
 
+      {/* User feedback */}
       {!isAdmin && userVote && (
-        <p className={`mt-4 font-semibold text-center ${userVote.isCorrect ? "text-green-600" : "text-red-600"}`}>
+        <p
+          className={`mt-4 font-semibold text-center ${
+            userVote.isCorrect ? "text-green-600" : "text-red-600"
+          }`}
+        >
           {userVote.isCorrect ? "✅ Correct!" : "❌ Wrong Answer"}
         </p>
       )}
 
+      {/* Admin actions */}
       {isAdmin && (
-        <div className="flex flex-wrap gap-3 mt-4 sm:mt-5">
-          {onEdit && <button onClick={onEdit} className="bg-yellow-500 text-white px-4 py-2 rounded-xl hover:bg-yellow-600 w-full sm:w-auto">Edit</button>}
-          {onDelete && <button onClick={onDelete} className="bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600 w-full sm:w-auto">Delete</button>}
+        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 mt-4 sm:mt-5">
+          {onEdit && (
+            <button
+              onClick={onEdit}
+              className="bg-yellow-500 text-white px-4 py-2 rounded-xl hover:bg-yellow-600 w-full sm:w-auto transition"
+            >
+              Edit
+            </button>
+          )}
+          {onDelete && (
+            <button
+              onClick={onDelete}
+              className="bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600 w-full sm:w-auto transition"
+            >
+              Delete
+            </button>
+          )}
         </div>
       )}
     </div>

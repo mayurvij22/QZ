@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../context/ToastContext";
@@ -15,8 +15,57 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Validation states
+  const [nameError, setNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  // Shake animation states
+  const [shakeName, setShakeName] = useState(false);
+  const [shakeEmail, setShakeEmail] = useState(false);
+  const [shakePassword, setShakePassword] = useState(false);
+
+  // Real-time validations
+  useEffect(() => {
+    setNameError(name ? "" : "Name cannot be empty");
+  }, [name]);
+
+  useEffect(() => {
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      setEmailError(emailRegex.test(email) ? "" : "Please enter a valid email address");
+    } else {
+      setEmailError("");
+    }
+  }, [email]);
+
+  useEffect(() => {
+    if (password && password.length < 6) {
+      setPasswordError("Password must be at least 6 characters");
+    } else {
+      setPasswordError("");
+    }
+  }, [password]);
+
   const submit = async (e) => {
     e.preventDefault();
+
+    // Trigger shake animations
+    if (nameError) {
+      setShakeName(true);
+      setTimeout(() => setShakeName(false), 500);
+    }
+    if (emailError) {
+      setShakeEmail(true);
+      setTimeout(() => setShakeEmail(false), 500);
+    }
+    if (passwordError) {
+      setShakePassword(true);
+      setTimeout(() => setShakePassword(false), 500);
+    }
+
+    if (nameError || emailError || passwordError) return;
+
     setLoading(true);
     try {
       const user = await registerUser({ name, email, password });
@@ -50,8 +99,11 @@ export default function Register() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Name"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 hover:shadow-sm transition"
+            className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 hover:shadow-sm transition ${
+              nameError ? "border-red-500 focus:ring-red-400 focus:border-red-400" : ""
+            } ${shakeName ? "animate-shake" : ""}`}
           />
+          {nameError && <p className="mt-1 text-sm text-red-500">{nameError}</p>}
         </div>
 
         {/* Email */}
@@ -64,8 +116,11 @@ export default function Register() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 hover:shadow-sm transition"
+            className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 hover:shadow-sm transition ${
+              emailError ? "border-red-500 focus:ring-red-400 focus:border-red-400" : ""
+            } ${shakeEmail ? "animate-shake" : ""}`}
           />
+          {emailError && <p className="mt-1 text-sm text-red-500">{emailError}</p>}
         </div>
 
         {/* Password */}
@@ -78,7 +133,9 @@ export default function Register() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 pr-10 hover:shadow-sm transition"
+            className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-green-400 pr-10 hover:shadow-sm transition ${
+              passwordError ? "border-red-500 focus:ring-red-400 focus:border-red-400" : ""
+            } ${shakePassword ? "animate-shake" : ""}`}
           />
           <button
             type="button"
@@ -88,17 +145,15 @@ export default function Register() {
           >
             {showPassword ? <FiEyeOff /> : <FiEye />}
           </button>
+          {passwordError && <p className="mt-1 text-sm text-red-500">{passwordError}</p>}
         </div>
-        <p className="text-xs text-gray-500 mb-4">
-          Password must be at least 6 characters.
-        </p>
 
         {/* Submit */}
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || nameError || emailError || passwordError}
           className={`w-full p-3 text-white font-semibold rounded-lg shadow-md transition-transform transform ${
-            loading
+            loading || nameError || emailError || passwordError
               ? "bg-green-300 cursor-not-allowed"
               : "bg-green-600 hover:bg-green-700 hover:scale-105"
           }`}

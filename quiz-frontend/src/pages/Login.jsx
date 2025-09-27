@@ -15,8 +15,49 @@ export default function Login() {
   const [remember, setRemember] = useState(!!localStorage.getItem("rememberEmail"));
   const [loading, setLoading] = useState(false);
 
+  // Validation states
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  // Shake animation states
+  const [shakeEmail, setShakeEmail] = useState(false);
+  const [shakePassword, setShakePassword] = useState(false);
+
+  // Real-time email validation
+  useEffect(() => {
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      setEmailError(emailRegex.test(email) ? "" : "Please enter a valid email address");
+    } else {
+      setEmailError("");
+    }
+  }, [email]);
+
+  // Real-time password validation
+  useEffect(() => {
+    if (password && password.length <= 4) {
+      setPasswordError("Password must be greater than 4 characters");
+    } else {
+      setPasswordError("");
+    }
+  }, [password]);
+
   const submit = async (e) => {
     e.preventDefault();
+
+    // Trigger shake animation if invalid
+    if (emailError) {
+      setShakeEmail(true);
+      setTimeout(() => setShakeEmail(false), 500);
+    }
+    if (passwordError) {
+      setShakePassword(true);
+      setTimeout(() => setShakePassword(false), 500);
+    }
+
+    // Stop submission if invalid
+    if (emailError || passwordError) return;
+
     setLoading(true);
     try {
       const user = await loginUser({ email, password });
@@ -53,8 +94,13 @@ export default function Login() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 hover:shadow-sm transition"
+            className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 hover:shadow-sm transition ${
+              emailError
+                ? "border-red-500 focus:ring-red-400 focus:border-red-400"
+                : "border-gray-300 focus:ring-blue-400 focus:border-blue-400"
+            } ${shakeEmail ? "animate-shake" : ""}`}
           />
+          {emailError && <p className="mt-1 text-sm text-red-500">{emailError}</p>}
         </div>
 
         {/* Password */}
@@ -67,7 +113,11 @@ export default function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 pr-10 hover:shadow-sm transition"
+            className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 pr-10 hover:shadow-sm transition ${
+              passwordError
+                ? "border-red-500 focus:ring-red-400 focus:border-red-400"
+                : "border-gray-300 focus:ring-blue-400 focus:border-blue-400"
+            } ${shakePassword ? "animate-shake" : ""}`}
           />
           <button
             type="button"
@@ -77,6 +127,7 @@ export default function Login() {
           >
             {showPassword ? <FiEyeOff /> : <FiEye />}
           </button>
+          {passwordError && <p className="mt-1 text-sm text-red-500">{passwordError}</p>}
         </div>
 
         {/* Remember & Forgot */}
@@ -98,9 +149,9 @@ export default function Login() {
         {/* Submit */}
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !!emailError || !!passwordError}
           className={`w-full p-3 text-white font-semibold rounded-lg shadow-md transition-transform transform ${
-            loading
+            loading || emailError || passwordError
               ? "bg-blue-300 cursor-not-allowed"
               : "bg-blue-600 hover:bg-blue-700 hover:-translate-y-0.5"
           }`}
